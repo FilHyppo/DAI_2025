@@ -3,6 +3,9 @@ globals [
   unsold-houses ; conteggio delle case invendute
   avg-price-per-sqm ; Prezzo medio al metro quadrato
   sales-rate ; Tasso di vendita delle case
+  total-sale-time ; Somma totale dei tick impiegati per vendere le case
+  sold-houses-count ; Conteggio delle case vendute
+  avg-sale-time ; Tempo medio per vendere una casa
 ]
 
 turtles-own [
@@ -26,6 +29,10 @@ to setup
   setup-buyers
   set price-history []
   set sales-rate 0 ; inizializza il tasso di vendita
+  set total-sale-time 0
+  set sold-houses-count 0
+  set avg-sale-time 0
+
   reset-ticks
 end
 
@@ -72,6 +79,9 @@ to go
   ]
   let initial-houses count patches with [house] ; Numero di case all'inizio del tick
   ask turtles [ attempt-purchase ]
+  set total-sale-time total-sale-time + count patches with [house] ; per ogni casa rimasta in vedita incremento il conteggio del tempo totale in vendita
+  show (word "abababababababbabab: " total-sale-time "%")
+
   let sold-houses initial-houses - count patches with [house] ; Case vendute nel tick
   update-sales-rate sold-houses initial-houses ; Aggiorna il tasso di vendita
   update-prices
@@ -79,6 +89,7 @@ to go
   create-new-houses
   create-new-buyers
   update-avg-price-per-sqm ; Calcola il prezzo medio al metro quadrato
+  update-avg-sale-time ; Calcola il tempo medio di vendita
   tick
 end
 
@@ -87,7 +98,7 @@ end
 to update-sales-rate [sold-houses initial-houses]
   if initial-houses > 0 [
     set sales-rate (sold-houses / initial-houses) * 100 ; Calcola la percentuale
-    show (word "Tasso di vendita: " sales-rate "%")
+    ;show (word "Tasso di vendita: " sales-rate "%")
   ]
   if initial-houses = 0 [
     set sales-rate 0 ; Se non ci sono case iniziali, il tasso di vendita è 0
@@ -100,18 +111,32 @@ to attempt-purchase
   let suitable-house one-of patches with [
     house and price <= [budget] of myself and abs(size_imm - [square-meters] of myself) <= size-tolerance
   ]
-  if suitable-house != nobody [
+       
+    if suitable-house != nobody [
     ; Acquisto completato
-    ;show (word "Acquirente con budget " budget " ha acquistato una casa con prezzo " [price] of suitable-house)
     ask suitable-house [
       set house false
       set pcolor black ; Casa venduta, patch non più verde
+      set sold-houses-count sold-houses-count + 1
       set price 0
       set size_imm 0
     ]
     die ; L'acquirente termina dopo l'acquisto
   ]
+  end
+
+to update-avg-sale-time
+  ifelse sold-houses-count > 0 [
+    set avg-sale-time total-sale-time / sold-houses-count
+    show (word "tot-sale-time: " total-sale-time)
+    show (word "avg-sale-time: " avg-sale-time)
+    show (word "sold houses count: " sold-houses-count)
+  ] [
+    set avg-sale-time 0 ; Default se non ci sono vendite
+  ]
+  ;show (word "Tempo medio per vendere una casa: " avg-sale-time)
 end
+
 
 ; I venditori aggiornano i prezzi a ribasso visto che non hanno venduto
 to update-prices
@@ -135,15 +160,15 @@ end
 to update-avg-price-per-sqm
   let total-price sum [price] of patches with [house]
   let total-size sum [size_imm] of patches with [house]
-  show (word "bbbtot-price: " total-price)
-  show (word "bbbtot-size: " total-size)
+  ;show (word "bbbtot-price: " total-price)
+  ;show (word "bbbtot-size: " total-size)
   ifelse total-size > 0 [
     set avg-price-per-sqm total-price / total-size
-    show (word "cccccccccavg-price-per-sqm: " avg-price-per-sqm)
+    ;show (word "cccccccccavg-price-per-sqm: " avg-price-per-sqm)
 
   ] [
     set avg-price-per-sqm 1 ; Default se non ci sono case disponibili
-    show (word "ccccccccc-przzo1aaaaaa: " avg-price-per-sqm)
+    ;show (word "ccccccccc-przzo1aaaaaa: " avg-price-per-sqm)
 
   ]
 end
@@ -173,7 +198,7 @@ to create-new-houses
   ] [
     1 + min list (demand-supply-ratio - 1) (max-price-adjustment / 100) ; Aumento massimo del 20%
   ]
-  show (word "price-adjustment-factor: " price-adjustment-factor)
+  ;show (word "price-adjustment-factor: " price-adjustment-factor)
 
   ask patches with [not house] [
     if created-houses < new-houses [
