@@ -1,2 +1,2 @@
 # DAI_2025
-Progetto Distributed Artificial Intelligence. L'obiettivo delprogetto è quello di analizzare l'ndamento dei prezzi degli immobili nel tempo in base a domqanda e offerta, simulando diverse variazioni sia di prezzo che di budget 
+Progetto Distributed Artificial Intelligence. L'obiettivo del progetto è quello di analizzare l'andamento dei prezzi degli immobili nel tempo in base a domanda e offerta, simulando diverse variabili sia di prezzo che di budget 
